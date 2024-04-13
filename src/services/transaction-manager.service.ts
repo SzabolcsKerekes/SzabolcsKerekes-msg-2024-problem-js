@@ -46,22 +46,24 @@ export class TransactionManagerService {
     }
 
     // calculating daily transaction amount for handling the daily transaction amount limit.
-    let dailyTransactioinAmount = 0;
-    for (const dailyTransaction of fromAccount.transactions) {
-      const transactionDate = dayjs(dailyTransaction.timestamp);
-      const currentDate = dayjs();
-      // checking if the daily transactions were made from the specific account
-      if (transactionDate.isSame(currentDate, 'day') && dailyTransaction.from === fromAccountId) {
-        dailyTransactioinAmount += dailyTransaction.amount.amount;
+    if (fromAccount.accountType === AccountType.CHECKING) {
+      let dailyTransactioinAmount = 0;
+      for (const dailyTransaction of fromAccount.transactions) {
+        const transactionDate = dayjs(dailyTransaction.timestamp);
+        const currentDate = dayjs();
+        // checking if the daily transactions were made from the specific account
+        if (transactionDate.isSame(currentDate, 'day') && dailyTransaction.from === fromAccountId) {
+          dailyTransactioinAmount += dailyTransaction.amount.amount;
+        }
       }
-    }
 
-    // handling daily transaction amount limit
-    if ((dailyTransactioinAmount + value.amount) > bankCard.dailyWithdrawalLimit) {
-      throw new Error(`Daily withdrawal limit exceeded. You can transfer up to 
-      ${bankCard.dailyWithdrawalLimit - dailyTransactioinAmount} ${fromAccount.balance.currency} today. 
-      Your current plan's limit is ${bankCard.dailyWithdrawalLimit} ${fromAccount.balance.currency}. 
-      If you want to send more money, please update your plan.`);
+      // handling daily transaction amount limit
+      if ((dailyTransactioinAmount + value.amount) > bankCard.dailyWithdrawalLimit) {
+        throw new Error(`Daily withdrawal limit exceeded. You can transfer up to 
+        ${bankCard.dailyWithdrawalLimit - dailyTransactioinAmount} ${fromAccount.balance.currency} today. 
+        Your current plan's limit is ${bankCard.dailyWithdrawalLimit} ${fromAccount.balance.currency}. 
+        If you want to send more money, please update your plan.`);
+      }
     }
 
     const transaction = new TransactionModel({
