@@ -79,6 +79,7 @@ export class TransactionManagerService {
     toAccount.balance.amount += value.amount;
     toAccount.transactions = [...toAccount.transactions, transaction];
 
+    // fixing floating-point number issues due to their limitations in representing decimal values precisely (e.g.: 2.00000000012 => 2).
     fromAccount.balance.amount = Math.round(fromAccount.balance.amount * 100) / 100;
     toAccount.balance.amount = Math.round(toAccount.balance.amount * 100) / 100;
 
@@ -153,6 +154,9 @@ export class TransactionManagerService {
 
     withdrawAccount.balance.amount -= amount.amount;
     withdrawAccount.transactions = [...withdrawAccount.transactions, transaction];
+
+    // fixing floating-point number issues due to their limitations in representing decimal values precisely (e.g.: 2.00000000012 => 2).
+    withdrawAccount.balance.amount = Math.round(withdrawAccount.balance.amount * 100) / 100;
 
     return transaction;
   }
