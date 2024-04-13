@@ -4,6 +4,7 @@ import { AccountsRepository } from '../repository/accounts.repository';
 import dayjs from 'dayjs';
 import { getConversionRate } from '../utils/money.utils';
 import { CheckingAccountModel } from '../domain/checking-account.model';
+import { AccountType } from '../domain/account-type.enum';
 
 export class TransactionManagerService {
   public transfer(fromAccountId: string, toAccountId: string, value: MoneyModel): TransactionModel {
@@ -22,12 +23,12 @@ export class TransactionManagerService {
     }
 
     // handling forbidden transfer functionalities SAVINGS => CHECKING
-    if (fromAccount.accountType === "SAVINGS" && toAccount.accountType === "CHECKING") {
+    if (fromAccount.accountType === AccountType.SAVINGS && toAccount.accountType === AccountType.CHECKING) {
       throw new Error('You cannot perform the transfer functionality between the following types of accounts: SAVINGS => CHECKING');
     }
 
     // handling forbidden transfer functionalities SAVINGS => SAVINGS
-    if (fromAccount.accountType === "SAVINGS" && toAccount.accountType === "SAVINGS") {
+    if (fromAccount.accountType === AccountType.SAVINGS && toAccount.accountType === AccountType.SAVINGS) {
       throw new Error('You cannot perform the transfer functionality between the following types of accounts: SAVINGS => SAVINGS');
     }
 
@@ -104,35 +105,38 @@ export class TransactionManagerService {
       throw new Error('Not enough funds available. Withdrawal is not allowed!');
     }
 
-    // handling inactive expired card
-    if (!bankCard.active && dayjs(bankCard?.expirationDate) < dayjs()) {
-      throw new Error('Your bankcard is inactive or expired. Please activate it or renew your card!');
-    }
 
-    // warning if the card expires on the transaction's date, but let them transactionate
-    if (bankCard.active && dayjs(bankCard.expirationDate) === dayjs()) {
-      console.log(`WARNING: Bankcard ${bankCard} will expire today!`);
-    }
-    
-    // calculating daily transaction amount for handling the daily transaction amount limit.
-    let dailyTransactioinAmount = 0;
-    for (const dailyTransaction of withdrawAccount.transactions) {
-      const transactionDate = dayjs(dailyTransaction.timestamp);
-      const currentDate = dayjs();
-      // checking if the daily transactions were made from the specific account (from his/her account)
-      if (transactionDate.isSame(currentDate, 'day') && dailyTransaction.from === accountId) {
-        dailyTransactioinAmount += dailyTransaction.amount.amount;
+    if (withdrawAccount.accountType === AccountType.CHECKING) {
+      // handling inactive expired card
+      if (!bankCard.active && dayjs(bankCard?.expirationDate) < dayjs()) {
+        throw new Error('Your bankcard is inactive or expired. Please activate it or renew your card!');
       }
-    }
 
-    // handling daily transaction amount limit
-    if ((dailyTransactioinAmount + amount.amount) > bankCard.dailyWithdrawalLimit) {
-      throw new Error(`Daily withdrawal limit exceeded. You can transfer up to 
-      ${bankCard.dailyWithdrawalLimit - dailyTransactioinAmount} ${withdrawAccount.balance.currency} today. 
-      Your current plan's limit is ${bankCard.dailyWithdrawalLimit} ${withdrawAccount.balance.currency}. 
-      If you want to send more money, please update your plan.`);
-    }
+      // warning if the card expires on the transaction's date, but let them transactionate
+      if (bankCard.active && dayjs(bankCard.expirationDate) === dayjs()) {
+        console.log(`WARNING: Bankcard ${bankCard} will expire today!`);
+      }
+      
+      // calculating daily transaction amount for handling the daily transaction amount limit.
+      let dailyTransactioinAmount = 0;
+      for (const dailyTransaction of withdrawAccount.transactions) {
+        const transactionDate = dayjs(dailyTransaction.timestamp);
+        const currentDate = dayjs();
+        // checking if the daily transactions were made from the specific account (from his/her account)
+        if (transactionDate.isSame(currentDate, 'day') && dailyTransaction.from === accountId) {
+          dailyTransactioinAmount += dailyTransaction.amount.amount;
+        }
+      }
 
+      // handling daily transaction amount limit
+      if ((dailyTransactioinAmount + amount.amount) > bankCard.dailyWithdrawalLimit) {
+        throw new Error(`Daily withdrawal limit exceeded. You can transfer up to 
+        ${bankCard.dailyWithdrawalLimit - dailyTransactioinAmount} ${withdrawAccount.balance.currency} today. 
+        Your current plan's limit is ${bankCard.dailyWithdrawalLimit} ${withdrawAccount.balance.currency}. 
+        If you want to send more money, please update your plan.`);
+      }
+
+    }
     const transaction = new TransactionModel({
       id: crypto.randomUUID(),
       from: withdrawAccount.id,
