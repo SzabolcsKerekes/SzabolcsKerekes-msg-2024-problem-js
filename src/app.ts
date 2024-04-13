@@ -1,4 +1,4 @@
-import { checkingAccountA, checkingAccountB, savingsAccountA, savingsAccountB } from './seed/accounts.seed';
+import { checkingAccountA, checkingAccountB, checkingAccountC, savingsAccountA, savingsAccountB } from './seed/accounts.seed';
 import { TransactionManagerServiceInstance } from './services/transaction-manager.service';
 import { SavingsManagerServiceInstance } from './services/savings-manager.service';
 import { seedInitializer } from './seed/seed-initializer';
