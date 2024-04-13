@@ -32,6 +32,22 @@ export class TransactionManagerService {
       throw new Error('You cannot perform the transfer functionality between the following types of accounts: SAVINGS => SAVINGS');
     }
 
+    // if sending currency is different than the fromAccount's default currency we need to convert it
+    let removableAmountFromAccount = 0;
+    if (value.currency === fromAccount.balance.currency) {
+      removableAmountFromAccount = value.amount;
+    } else {
+      removableAmountFromAccount = value.amount * getConversionRate(value.currency, fromAccount.balance.currency);
+    }
+
+    // if sending currency is different than the toAccount's default currency we need to convert it
+    let addableAmountToAccount = 0;
+    if (value.currency === toAccount.balance.currency) {
+      addableAmountToAccount = value.amount;
+    } else {
+      addableAmountToAccount = value.amount * getConversionRate(value.currency, toAccount.balance.currency);
+    }
+
     // handling currency conversions both for accounts and for the value transferred
     if (toAccount.balance.currency !== value.currency) {
       let conversionRate = getConversionRate(value.currency, toAccount.balance.currency);
@@ -74,9 +90,10 @@ export class TransactionManagerService {
       timestamp: dayjs().toDate(),
     });
 
-    fromAccount.balance.amount -= value.amount;
+    // the actual transaction
+    fromAccount.balance.amount -= removableAmountFromAccount;
     fromAccount.transactions = [...fromAccount.transactions, transaction];
-    toAccount.balance.amount += value.amount;
+    toAccount.balance.amount += addableAmountToAccount;
     toAccount.transactions = [...toAccount.transactions, transaction];
 
     // fixing floating-point number issues due to their limitations in representing decimal values precisely (e.g.: 2.00000000012 => 2).

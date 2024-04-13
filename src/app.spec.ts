@@ -14,7 +14,7 @@ seedInitializer();
 describe('Checking account tests', () => {
 
   // --- TRANSFERING TESTS --- 
-  describe('Transfering tests', () => {
+  describe('1. Transfering tests', () => {
 
     describe('Checking funds before transfer on A and B', () => {
       // Checking account A
@@ -61,7 +61,7 @@ describe('Checking account tests', () => {
 
 
   // --- WITHDRAWAL TESTS --- 
-  describe('Withdrawal tests', () => {
+  describe('2. Withdrawal tests', () => {
     describe('Checking funds before withdrawal on C', () => {
       // Checking account C
       test('Expected money (amount and currency) on checkingAccountC should be 10EUR', () => {
@@ -92,8 +92,8 @@ describe('Checking account tests', () => {
 
 
   // --- CURRENCY CONVERTING TESTS --- 
-  describe('Currency converting tests', () => {
-
+  describe('3. Currency converting tests', () => {
+    // transfering EUR from RON to RON
     describe('Transfering EUR from RON account to RON account', () => {
       // Checking account C
       test('Transfering 10EUR from CheckingAccountB to CheckingAccountA', () => {
@@ -115,8 +115,55 @@ describe('Checking account tests', () => {
         expect(TransactionManagerServiceInstance.checkFunds(checkingAccountB.id).currency).toBe(CurrencyType.RON);
       });
     });
+
+    // transfering EUR from EUR to RON
+    // transfering all the funds from C to A
+    describe('Transfering EUR from EUR account to RON account', () => {
+      test('Transfering 5EUR from CheckingAccountC to CheckingAccountA', () => {
+        const transaction = TransactionManagerServiceInstance.transfer(
+          checkingAccountC.id,
+          checkingAccountA.id,
+          new MoneyModel({ amount: 5, currency: CurrencyType.EUR })
+        );
+        // multiplying the amount by the exchange rate of EUR/RON to determine how much RON will be sent to the recipient's RON account.
+        expect(transaction.amount.amount).toBe(5*getConversionRate(CurrencyType.EUR, CurrencyType.RON));
+        expect(transaction.amount.currency).toBe(CurrencyType.RON); 
+      });
+      // Checking account C
+      test('Expected money on checkingAccountC should be 0EUR', () => {
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountC.id).amount).toBe(0);
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountC.id).currency).toBe(CurrencyType.EUR);
+      });
+      // Checking account A
+      test('Expected money on checkingAccountA should be 0.2RON+5EUR with the exchange rate of EUR/RON~=4.98 => 25.1RON', () => {
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountA.id).amount).toBe(25.1);
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountA.id).currency).toBe(CurrencyType.RON);
+      });
+    });
+
+    // transfering EUR from RON to EUR
+    describe('Transfering EUR from RON account to EUR account', () => {
+      test('Transfering 5EUR from CheckingAccountA to CheckingAccountC', () => {
+        const transaction = TransactionManagerServiceInstance.transfer(
+          checkingAccountA.id,
+          checkingAccountC.id,
+          new MoneyModel({ amount: 5, currency: CurrencyType.EUR })
+        );
+        // multiplying the amount by the exchange rate of EUR/RON to determine how much RON will be sent to the recipient's RON account.
+        expect(transaction.amount.amount).toBe(5);
+        expect(transaction.amount.currency).toBe(CurrencyType.EUR); 
+      });
+      test('Expected money on checkingAccountA should be 25.1RON-5EUR = 0.2RON', () => {
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountA.id).amount).toBe(0.2);
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountA.id).currency).toBe(CurrencyType.RON);
+      });
+      test('Expected money on checkingAccountC should be 5 EUR', () => {
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountC.id).amount).toBe(5);
+        expect(TransactionManagerServiceInstance.checkFunds(checkingAccountC.id).currency).toBe(CurrencyType.EUR);
+      });
+    });
   });
-})
+});
 
 
 // ******************************************
