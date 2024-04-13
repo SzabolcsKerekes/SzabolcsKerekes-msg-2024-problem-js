@@ -79,6 +79,10 @@ export class TransactionManagerService {
     toAccount.balance.amount += value.amount;
     toAccount.transactions = [...toAccount.transactions, transaction];
 
+    fromAccount.balance.amount = Math.round(fromAccount.balance.amount * 100) / 100;
+    toAccount.balance.amount = Math.round(toAccount.balance.amount * 100) / 100;
+
+
     return transaction;
   }
 
