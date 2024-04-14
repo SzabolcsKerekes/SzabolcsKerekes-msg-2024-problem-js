@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { getConversionRate } from '../utils/money.utils';
 import { CheckingAccountModel } from '../domain/checking-account.model';
 import { AccountType } from '../domain/account-type.enum';
+import { CurrencyType } from '../domain/currency-type.enum';
 
 export class TransactionManagerService {
   public transfer(fromAccountId: string, toAccountId: string, value: MoneyModel): TransactionModel {
@@ -12,15 +13,17 @@ export class TransactionManagerService {
     const toAccount = AccountsRepository.get(toAccountId);
     const bankCard = (fromAccount as CheckingAccountModel).associatedCard!;
 
+
     // checking if account exists
     if (!fromAccount || !toAccount) {
       throw new Error('Specified account does not exist');
     }
 
-    // in order to check the account's daily transaction amount limit later, every account should have a bankCard attached to it
-    if (!bankCard) {
-      throw new Error('Your account does not have a bankcard attached. Please add your card now!');
+    // handling negative amount withdrawal or nothing
+    if (value.amount <= 0) {
+      throw new Error('Transfering zero or negative amount is not allowed!');
     }
+
 
     // handling forbidden transfer functionalities SAVINGS => CHECKING
     if (fromAccount.accountType === AccountType.SAVINGS && toAccount.accountType === AccountType.CHECKING) {
@@ -30,6 +33,21 @@ export class TransactionManagerService {
     // handling forbidden transfer functionalities SAVINGS => SAVINGS
     if (fromAccount.accountType === AccountType.SAVINGS && toAccount.accountType === AccountType.SAVINGS) {
       throw new Error('You cannot perform the transfer functionality between the following types of accounts: SAVINGS => SAVINGS');
+    }
+
+    // handling edge case: transfering from client's own account to the same own account
+    if (fromAccount.id === toAccount.id) {
+      throw new Error('Transfer functionality from your own account to your same own account is not allowed!');
+    }
+
+    // handling non recognized currencies
+    if (value.currency === CurrencyType.USD) {
+      throw new Error('Invalid currency type!');
+    }
+
+    // in order to check the account's daily transaction amount limit later, every account should have a bankCard attached to it
+    if (!bankCard) {
+      throw new Error('Your account does not have a bankcard attached. Please add your card now!');
     }
 
     // if sending currency is different than the fromAccount's default currency we need to convert it
@@ -117,6 +135,11 @@ export class TransactionManagerService {
       throw new Error('Your account does not have a bankcard attached. Please add your card now!');
     }
 
+    // handling negative amount withdrawal or nothing
+    if (amount.amount <= 0) {
+      throw new Error('Withdrawing zero or negative amount is not allowed!');
+    }
+
     // handling currency conversions both for the withdraw account and for the amount (value)
     if (withdrawAccount.balance.currency !== amount.currency) {
       let conversionRate = getConversionRate(amount.currency, withdrawAccount.balance.currency);
@@ -161,21 +184,21 @@ export class TransactionManagerService {
       }
 
     }
-    const transaction = new TransactionModel({
+    const withdrawal = new TransactionModel({
       id: crypto.randomUUID(),
-      from: withdrawAccount.id,
-      to: withdrawAccount.id,
+      from: accountId,
+      to: accountId,
       amount: amount,
       timestamp: dayjs().toDate(),
     });
 
     withdrawAccount.balance.amount -= amount.amount;
-    withdrawAccount.transactions = [...withdrawAccount.transactions, transaction];
+    withdrawAccount.transactions = [...withdrawAccount.transactions, withdrawal];
 
     // fixing floating-point number issues due to their limitations in representing decimal values precisely (e.g.: 2.00000000012 => 2).
     withdrawAccount.balance.amount = Math.round(withdrawAccount.balance.amount * 100) / 100;
 
-    return transaction;
+    return withdrawal;
   }
 
   public checkFunds(accountId: string): MoneyModel {

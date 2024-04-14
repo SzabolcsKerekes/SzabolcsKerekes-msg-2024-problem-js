@@ -12,7 +12,7 @@ seedInitializer();
 // ******************************************
 // --------- CHECKING ACCOUNT TESTS ---------
 // ******************************************
-describe('Checking account tests', () => {
+describe('\nChecking account tests:\n', () => {
 
   // --- TRANSFERING TESTS --- 
   describe('1. Transfering tests', () => {
@@ -170,7 +170,7 @@ describe('Checking account tests', () => {
 // ******************************************
 // --------- SAVINGS ACCOUNT TESTS ---------
 // ******************************************
-describe('Savings account tests', () => {
+describe('\nSavings account tests:\n', () => {
   describe('Checking SavingsAccountA and SavingsAccountB (Monthly and Quarterly interests) - Before interest', () => {
     test('Balance of savingsAccountA should be 1000 RON', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountA.id).amount).toBe(1000);
@@ -232,5 +232,128 @@ describe('Savings account tests', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).amount).toBe((2000*InterestRate.SIX_MONTH_ACCOUNT)+2000);
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).currency).toBe(CurrencyType.EUR);
     });
+  });
+});
+
+
+// ******************************************
+// --------- EDGE CASES TESTS ---------
+// ******************************************
+describe('\nEdge cases tests:\n', () => {
+  test('Transfering from Savings Account to Checking Account should not be allowed', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        savingsAccountA.id,
+        checkingAccountA.id,
+        new MoneyModel({ amount: 5, currency: CurrencyType.EUR })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('You cannot perform the transfer functionality between the following types of accounts: SAVINGS => CHECKING');
+  });
+
+  test('Transfering from Savings Account to Savings Account should not be allowed', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        savingsAccountA.id,
+        savingsAccountB.id,
+        new MoneyModel({ amount: 5, currency: CurrencyType.EUR })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('You cannot perform the transfer functionality between the following types of accounts: SAVINGS => SAVINGS');
+  });
+
+  test('Result of a transaction should not lead to negative account balance', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountA.id,
+        checkingAccountC.id,
+        new MoneyModel({ amount: 5, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Not enough funds available. Transfer is not allowed!');
+  });
+
+  test('Result of a withdrawal should not lead to negative account balance', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.withdraw(
+        checkingAccountA.id,
+        new MoneyModel({ amount: 5, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Not enough funds available. Withdrawal is not allowed!');
+  });
+
+  test('Transfering invalid currency type should not be allowed', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountA.id,
+        checkingAccountB.id,
+        new MoneyModel({ amount: 5, currency: CurrencyType.USD })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Invalid currency type!');
+  });
+
+  test('Transfering to client\'s own account should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountA.id,
+        checkingAccountA.id,
+        new MoneyModel({ amount: 5, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Transfer functionality from your own account to your same own account is not allowed!');
+  });
+
+  test('Transfering negative amount of money should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountA.id,
+        checkingAccountB.id,
+        new MoneyModel({ amount: -5, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Transfering zero or negative amount is not allowed!');
+  });
+
+  test('Withdrawing negative amount of money should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.withdraw(
+        checkingAccountA.id,
+        new MoneyModel({ amount: -5, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Withdrawing zero or negative amount is not allowed!');
+  });
+
+  test('Transfering nothing should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountA.id,
+        checkingAccountB.id,
+        new MoneyModel({ amount: 0, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Transfering zero or negative amount is not allowed!');
+  });
+
+  test('Withdrawing nothing should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.withdraw(
+        checkingAccountA.id,
+        new MoneyModel({ amount: 0, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Withdrawing zero or negative amount is not allowed!');
   });
 });

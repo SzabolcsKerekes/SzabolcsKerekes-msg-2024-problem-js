@@ -14,22 +14,27 @@ console.log('[SYSTEM]', 'Running Application \n\n');
 console.log('[Transaction Manager] 1.', TransactionManagerServiceInstance.checkFunds(checkingAccountA.id));
 console.log('[Transaction Manager] 2.', TransactionManagerServiceInstance.checkFunds(checkingAccountB.id));
 
-const transaction1 = TransactionManagerServiceInstance.transfer(
-  checkingAccountA.id,
-  checkingAccountB.id,
-  new MoneyModel({ amount: 50, currency: CurrencyType.USD })
-);
+// this is handled to not work, it's considered as an invalid currency type
+// const transaction1 = TransactionManagerServiceInstance.transfer(
+//   checkingAccountA.id,
+//   checkingAccountB.id,
+//   new MoneyModel({ amount: 50, currency: CurrencyType.USD })
+// );
 
-console.log('[Transaction Manager] 3.', transaction1);
+// console.log('[Transaction Manager] 3.', transaction1);
 console.log('[Transaction Manager] 4.', TransactionManagerServiceInstance.checkFunds(checkingAccountA.id));
 console.log('[Transaction Manager] 5.', TransactionManagerServiceInstance.checkFunds(checkingAccountB.id));
 
-console.log('[Transaction Manager] 6.',
-  TransactionManagerServiceInstance.withdraw(
-    checkingAccountC.id,
-    new MoneyModel({ amount: 5, currency: CurrencyType.EUR })
-  )
+console.log('[Transaction Manager] 6.', TransactionManagerServiceInstance.checkFunds(checkingAccountC.id));
+
+const withdrawal1 = TransactionManagerServiceInstance.withdraw(
+  checkingAccountC.id,
+  new MoneyModel({ amount: 5, currency: CurrencyType.EUR })
 );
+
+console.log('[Transaction Manager] 7.', withdrawal1);
+
+console.log('[Transaction Manager] 8.', TransactionManagerServiceInstance.checkFunds(checkingAccountC.id));
 
 console.log('\n------------------------------------\n');
 
