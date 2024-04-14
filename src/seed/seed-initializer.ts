@@ -4,6 +4,8 @@ import {
   checkingAccountB,
   checkingAccountC,
   checkingAccountD,
+  checkingAccountE,
+  checkingAccountF,
   savingsAccountA,
   savingsAccountB,
 } from './accounts.seed';
@@ -16,4 +18,6 @@ export function seedInitializer(): void {
   AccountsRepository.add(checkingAccountB.id, checkingAccountB);
   AccountsRepository.add(checkingAccountC.id, checkingAccountC);
   AccountsRepository.add(checkingAccountD.id, checkingAccountD);
+  AccountsRepository.add(checkingAccountE.id, checkingAccountE);
+  AccountsRepository.add(checkingAccountF.id, checkingAccountF);
 }

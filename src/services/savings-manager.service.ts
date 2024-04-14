@@ -46,7 +46,7 @@ export class SavingsManagerService {
         this.addInterest(savingAccount);
         savingAccount.lastInterestAppliedDate = currentInterestMonth.toDate();
     }
-}
+  }
 
 
   private addInterest(savingAccount: SavingsAccountModel): void {

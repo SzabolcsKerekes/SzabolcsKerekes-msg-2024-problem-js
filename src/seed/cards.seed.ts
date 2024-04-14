@@ -31,7 +31,7 @@ export const card3 = new CardModel({
   expirationDate: new Date('2028-10-30'),
   issueDate: new Date('2023-03-20'),
   contactless: true,
-  active: false,
+  active: true,
   dailyWithdrawalLimit: 2000,
   dailyTransactionLimit: 5000,
 });
@@ -44,6 +44,30 @@ export const card4 = new CardModel({
   issueDate: new Date('2020-04-25'),
   contactless: true,
   active: true,
+  dailyWithdrawalLimit: 4000,
+  dailyTransactionLimit: 8000,
+});
+
+export const card5 = new CardModel({
+  cardNumber: 5678901234567891,
+  cardHolderName: 'Szabolcs Kerekes',
+  cvv: 123,
+  expirationDate: new Date('2022-09-25'),
+  issueDate: new Date('2020-04-25'),
+  contactless: true,
+  active: true,
+  dailyWithdrawalLimit: 4000,
+  dailyTransactionLimit: 8000,
+});
+
+export const card6 = new CardModel({
+  cardNumber: 6789012345678912,
+  cardHolderName: 'Szabolcs Kerekes',
+  cvv: 234,
+  expirationDate: new Date('2028-09-25'),
+  issueDate: new Date('2020-04-25'),
+  contactless: true,
+  active: false,
   dailyWithdrawalLimit: 4000,
   dailyTransactionLimit: 8000,
 });

@@ -48,6 +48,15 @@ export class TransactionManagerService {
     // in order to check the account's daily transaction amount limit later, every account should have a bankCard attached to it
     if (!bankCard) {
       throw new Error('Your account does not have a bankcard attached. Please add your card now!');
+    } 
+    // handling expired or inactive card
+    if (!bankCard.active || dayjs(bankCard.expirationDate) < dayjs() || (!bankCard.active && dayjs(bankCard.expirationDate))) {
+      throw new Error('Your bank card is expired or inactive. Try to activate it or get a new one from the bank!');
+    }
+
+    // setting inactive an expired card
+    if (dayjs(bankCard.expirationDate) < dayjs()) {
+      bankCard.active = false;
     }
 
     // if sending currency is different than the fromAccount's default currency we need to convert it
@@ -93,10 +102,7 @@ export class TransactionManagerService {
 
       // handling daily transaction amount limit
       if ((dailyTransactioinAmount + value.amount) > bankCard.dailyWithdrawalLimit) {
-        throw new Error(`Daily withdrawal limit exceeded. You can transfer up to 
-        ${bankCard.dailyWithdrawalLimit - dailyTransactioinAmount} ${fromAccount.balance.currency} today. 
-        Your current plan's limit is ${bankCard.dailyWithdrawalLimit} ${fromAccount.balance.currency}. 
-        If you want to send more money, please update your plan.`);
+        throw new Error('Daily trasfering limit reached. If you want to send more money, please update your plan!');
       }
     }
 
@@ -133,6 +139,11 @@ export class TransactionManagerService {
     // in order to check the account's daily transaction amount limit later, every account should have a bankCard attached to it
     if (!bankCard) {
       throw new Error('Your account does not have a bankcard attached. Please add your card now!');
+    }
+
+    // handling expired or inactive card
+    if (!bankCard.active || dayjs(bankCard.expirationDate) < dayjs() || (!bankCard.active && dayjs(bankCard.expirationDate))) {
+      throw new Error('Your bank card is expired or inactive. Try to activate it or get a new one from the bank!');
     }
 
     // handling negative amount withdrawal or nothing
@@ -177,10 +188,7 @@ export class TransactionManagerService {
 
       // handling daily transaction amount limit
       if ((dailyTransactioinAmount + amount.amount) > bankCard.dailyWithdrawalLimit) {
-        throw new Error(`Daily withdrawal limit exceeded. You can transfer up to 
-        ${bankCard.dailyWithdrawalLimit - dailyTransactioinAmount} ${withdrawAccount.balance.currency} today. 
-        Your current plan's limit is ${bankCard.dailyWithdrawalLimit} ${withdrawAccount.balance.currency}. 
-        If you want to send more money, please update your plan.`);
+        throw new Error('Daily withdrawal limit reached. If you want to withdraw more money, please update your plan!');
       }
 
     }

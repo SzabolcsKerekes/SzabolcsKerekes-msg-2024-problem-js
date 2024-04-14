@@ -1,4 +1,4 @@
-import { checkingAccountA, checkingAccountB, checkingAccountC, savingsAccountA, savingsAccountB } from './seed/accounts.seed';
+import { checkingAccountA, checkingAccountB, checkingAccountC, checkingAccountD, checkingAccountE, savingsAccountA, savingsAccountB } from './seed/accounts.seed';
 import { TransactionManagerServiceInstance } from './services/transaction-manager.service';
 import { SavingsManagerServiceInstance } from './services/savings-manager.service';
 import { seedInitializer } from './seed/seed-initializer';
@@ -355,5 +355,75 @@ describe('\nEdge cases tests:\n', () => {
     }
     expect(throwError).toThrow(Error);
     expect(throwError).toThrow('Withdrawing zero or negative amount is not allowed!');
+  });
+
+  test('Transfering more than the balance should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountA.id,
+        checkingAccountB.id,
+        new MoneyModel({ amount: 1000, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Not enough funds available. Transfer is not allowed!');
+  });
+
+  test('Withdrawing more than the balance should not be possible', () => {
+    function throwError() {
+      TransactionManagerServiceInstance.withdraw(
+        checkingAccountA.id,
+        new MoneyModel({ amount: 1000, currency: CurrencyType.RON })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Not enough funds available. Withdrawal is not allowed!');
+  });
+
+  test('Daily transfering amount of an account should not go above daily limit', async () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountD.id,
+        checkingAccountB.id,
+        new MoneyModel({ amount: 1000, currency: CurrencyType.EUR })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Daily trasfering limit reached. If you want to send more money, please update your plan!');
+  });
+
+  test('Daily withdrawal amount of an account should not go above daily limit', async () => {
+    function throwError() {
+      TransactionManagerServiceInstance.withdraw(
+        checkingAccountD.id,
+        new MoneyModel({ amount: 10000, currency: CurrencyType.EUR })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Daily withdrawal limit reached. If you want to withdraw more money, please update your plan!');
+  });
+
+  test('Transfering from account with expired card should not be allowed', async () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountE.id,
+        checkingAccountA.id,
+        new MoneyModel({ amount: 10, currency: CurrencyType.EUR })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Your bank card is expired or inactive. Try to activate it or get a new one from the bank!');
+  });
+
+  test('Withdrawal from account with inactive card should not be allowed', async () => {
+    function throwError() {
+      TransactionManagerServiceInstance.transfer(
+        checkingAccountE.id,
+        checkingAccountA.id,
+        new MoneyModel({ amount: 10, currency: CurrencyType.EUR })
+      );
+    }
+    expect(throwError).toThrow(Error);
+    expect(throwError).toThrow('Your bank card is expired or inactive. Try to activate it or get a new one from the bank!');
   });
 });
