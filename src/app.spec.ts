@@ -1,4 +1,4 @@
-import { checkingAccountA, checkingAccountB, checkingAccountC, checkingAccountD, checkingAccountE, savingsAccountA, savingsAccountB } from './seed/accounts.seed';
+import { checkingAccountA, checkingAccountB, checkingAccountC, checkingAccountD, checkingAccountE, savingsAccountA, savingsAccountB, savingsAccountC } from './seed/accounts.seed';
 import { TransactionManagerServiceInstance } from './services/transaction-manager.service';
 import { SavingsManagerServiceInstance } from './services/savings-manager.service';
 import { seedInitializer } from './seed/seed-initializer';
@@ -171,7 +171,7 @@ describe('\nChecking account tests:\n', () => {
 // --------- SAVINGS ACCOUNT TESTS ---------
 // ******************************************
 describe('\nSavings account tests:\n', () => {
-  describe('Checking SavingsAccountA and SavingsAccountB (Monthly and Quarterly interests) - Before interest', () => {
+  describe('Checking SavingsAccountA, SavingsAccountB and SavingsAccountC (Monthly and Quarterly interests) - Before interest', () => {
     test('Balance of savingsAccountA should be 1000 RON', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountA.id).amount).toBe(1000);
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountA.id).currency).toBe(CurrencyType.RON);
@@ -180,6 +180,11 @@ describe('\nSavings account tests:\n', () => {
     test('Balance of savingsAccountB should be 2000 EUR', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).amount).toBe(2000);
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).currency).toBe(CurrencyType.EUR);
+    });
+
+    test('Balance of savingsAccountC should be 1000 EUR', () => {
+      expect(TransactionManagerServiceInstance.checkFunds(savingsAccountC.id).amount).toBe(1000);
+      expect(TransactionManagerServiceInstance.checkFunds(savingsAccountC.id).currency).toBe(CurrencyType.EUR);
     });
   });
 
@@ -198,6 +203,11 @@ describe('\nSavings account tests:\n', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).amount).toBe(2000);
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).currency).toBe(CurrencyType.EUR);
     });
+
+    test('Balance of savingsAccountC should be 1047.5 EUR - got it\'s first and only interest', () => {
+      expect(TransactionManagerServiceInstance.checkFunds(savingsAccountC.id).amount).toBe(1000+(InterestRate.ONE_MONTH_ACCOUNT*1000));
+      expect(TransactionManagerServiceInstance.checkFunds(savingsAccountC.id).currency).toBe(CurrencyType.EUR);
+    });
   });
 
   // one month later
@@ -214,6 +224,11 @@ describe('\nSavings account tests:\n', () => {
     test('Balance of savingsAccountB should be 2000 EUR', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).amount).toBe(2000);
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).currency).toBe(CurrencyType.EUR);
+    });
+
+    test('Balance of savingsAccountC should be 1047.5 EUR - lifetime ended, no more interests', () => {
+      expect(TransactionManagerServiceInstance.checkFunds(savingsAccountC.id).amount).toBe(1047.5);
+      expect(TransactionManagerServiceInstance.checkFunds(savingsAccountC.id).currency).toBe(CurrencyType.EUR);
     });
   });
 
@@ -232,7 +247,7 @@ describe('\nSavings account tests:\n', () => {
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).amount).toBe((2000*InterestRate.SIX_MONTH_ACCOUNT)+2000);
       expect(TransactionManagerServiceInstance.checkFunds(savingsAccountB.id).currency).toBe(CurrencyType.EUR);
     });
-  });
+  });  
 });
 
 

@@ -14,6 +14,7 @@ export const savingsAccountA = new SavingsAccountModel({
   interestFrequency: CapitalizationFrequency.MONTHLY,
   lastInterestAppliedDate: dayjs().toDate(),
   interest: InterestRate.THREE_MONTH_ACCOUNT,
+  interestRecievedMonthCounter: 0,
 });
 export const savingsAccountB = new SavingsAccountModel({
   id: 'ROBMSG100002',
@@ -22,7 +23,18 @@ export const savingsAccountB = new SavingsAccountModel({
   interestFrequency: CapitalizationFrequency.QUARTERLY,
   lastInterestAppliedDate: dayjs().toDate(),
   interest: InterestRate.SIX_MONTH_ACCOUNT,
+  interestRecievedMonthCounter: 0,
 });
+export const savingsAccountC = new SavingsAccountModel({
+  id: 'ROBMSG100003',
+  transactions: [],
+  balance: new MoneyModel({ amount: 1000, currency: CurrencyType.EUR }),
+  interestFrequency: CapitalizationFrequency.MONTHLY,
+  lastInterestAppliedDate: dayjs().toDate(),
+  interest: InterestRate.ONE_MONTH_ACCOUNT,
+  interestRecievedMonthCounter: 0,
+});
+
 
 export const checkingAccountA = new CheckingAccountModel({
   id: 'ROBMSG200001',
